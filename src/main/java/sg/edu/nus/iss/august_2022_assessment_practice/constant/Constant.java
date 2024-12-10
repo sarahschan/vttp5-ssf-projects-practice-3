@@ -7,4 +7,5 @@ public class Constant {
 
     public static final String CRYPTO_URL = "https://min-api.cryptocompare.com/data/v2/news/?lang=EN";
     
+    public static final String REDIS_KEY = "saved_articles";
 }

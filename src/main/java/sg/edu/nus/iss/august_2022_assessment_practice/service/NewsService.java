@@ -4,6 +4,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -14,12 +15,18 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonArray;
 import sg.edu.nus.iss.august_2022_assessment_practice.constant.Constant;
 import sg.edu.nus.iss.august_2022_assessment_practice.model.News;
+import sg.edu.nus.iss.august_2022_assessment_practice.repository.NewsRepo;
 
 @Service
 public class NewsService {
     
+    @Autowired
+    NewsRepo newsRepo;
+
     RestTemplate template = new RestTemplate();
 
+
+    // Call Crypto API and get all the articles
     public List<News> getArticles(){
         
         ResponseEntity<String> response = template.getForEntity(Constant.CRYPTO_URL, String.class);
@@ -59,4 +66,45 @@ public class NewsService {
         return newsList;
     }
     
+
+    // Find an article by ID (from Crypto API)
+    public News findArticleById(String articleId){
+
+        List<News> allArticles = getArticles();
+
+        for (News article : allArticles){
+            if (article.getId().equals(articleId)){
+                return article;
+            }
+        }
+
+        return null;
+
+    }
+
+
+    // Save an article to Redis
+    public void saveArticle(String articleId){
+        
+        // get the article
+        News articleToSave = findArticleById(articleId);
+
+        // build the newsJsonObject
+        JsonObject newsJsonObject = Json.createObjectBuilder()
+                                    .add("id", articleToSave.getId())
+                                    .add("publishedOn", articleToSave.getPublishedOn())
+                                    .add("publishedOnFormatted", articleToSave.getPublishedOnFormatted().toString())
+                                    .add("title", articleToSave.getTitle())
+                                    .add("url", articleToSave.getUrl())
+                                    .add("imageUrl", articleToSave.getImageUrl())
+                                    .add("body", articleToSave.getBody())
+                                    .add("tags", articleToSave.getTags())
+                                    .add("categories", articleToSave.getCategories())
+                                    .build();
+
+        // save to redis
+        newsRepo.create(Constant.REDIS_KEY, articleId, newsJsonObject.toString());
+
+    }
+
 }
