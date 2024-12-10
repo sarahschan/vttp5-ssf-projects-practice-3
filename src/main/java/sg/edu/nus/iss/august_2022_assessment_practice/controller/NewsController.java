@@ -1,25 +1,27 @@
-package sg.edu.nus.iss.august_2022_assessment_practice.restcontroller;
+package sg.edu.nus.iss.august_2022_assessment_practice.controller;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import sg.edu.nus.iss.august_2022_assessment_practice.model.News;
 import sg.edu.nus.iss.august_2022_assessment_practice.service.NewsService;
 
-@RestController
-public class NewsRestController {
+@Controller
+public class NewsController {
     
     @Autowired
     NewsService newsService;
 
     @GetMapping()
-    public List<News> showAllNews(){
+    public String showAllNews(Model model){
 
         List<News> newsList = newsService.getArticles();
+        model.addAttribute("newsList", newsList);
 
-        return newsList;
+        return "news";
     }
 }
