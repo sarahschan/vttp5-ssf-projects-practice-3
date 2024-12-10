@@ -12,8 +12,10 @@ import org.springframework.web.client.RestTemplate;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
 import sg.edu.nus.iss.august_2022_assessment_practice.constant.Constant;
 import sg.edu.nus.iss.august_2022_assessment_practice.model.News;
 import sg.edu.nus.iss.august_2022_assessment_practice.repository.NewsRepo;
@@ -130,7 +132,7 @@ public class NewsService {
     }
 
 
-    // Get all saved articles from Redis
+    // Get all saved articles from Redis (List POJOs)
     public List<News> allSavedArticles(){
 
         // Retrieve all saved articles from Redis
@@ -161,4 +163,104 @@ public class NewsService {
 
         return savedArticles;
     }
+
+    // This returns a Json Object with a single nested Json Array. Each element in the array is an article as a Json Object
+    public String getAllSavedArticlesJsonString(){
+
+        // Get the list of News POJOs
+        List<News> allSavedArticlesPOJO = allSavedArticles();
+
+        // Build the Json array
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+
+        for (News article : allSavedArticlesPOJO) {
+            // turn each article into a json object
+            JsonObject articleJsonObject = Json.createObjectBuilder()
+                                            .add("id", article.getId())
+                                            .add("publishedOn", article.getPublishedOn())
+                                            .add("publishedOnFormatted", article.getPublishedOnFormatted().toString())
+                                            .add("title", article.getTitle())
+                                            .add("url", article.getUrl())
+                                            .add("imageUrl", article.getImageUrl())
+                                            .add("body", article.getBody())
+                                            .add("tags", article.getTags())
+                                            .add("categories", article.getCategories())
+                                            .build();
+            // add the built object to the array
+            jsonArrayBuilder.add(articleJsonObject);
+        }
+
+        // Build the final array
+        JsonObject finalJsonObject = Json.createObjectBuilder()
+                                    .add("articles", jsonArrayBuilder)
+                                    .build();
+        
+        return finalJsonObject.toString();
+
+    }
+
+
+
+
+
+    // FOR REFERENCE: This returns an array of JsonObjects, each Object is a article
+    // public String getAllSavedArticlesJsonString() {
+    //     List<News> allSavedArticles = allSavedArticles(); // Fetch the list of articles
+
+    //     JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+
+    //     for (News article : allSavedArticles) {
+    //         JsonObjectBuilder articleBuilder = Json.createObjectBuilder();
+    //         articleBuilder.add("id", article.getId())
+    //                       .add("publishedOn", article.getPublishedOn())
+    //                       .add("publishedOnFormatted", article.getPublishedOnFormatted().toString())
+    //                       .add("title", article.getTitle())
+    //                       .add("url", article.getUrl())
+    //                       .add("imageUrl", article.getImageUrl())
+    //                       .add("body", article.getBody())
+    //                       .add("tags", article.getTags())
+    //                       .add("categories", article.getCategories());
+
+    //         jsonArrayBuilder.add(articleBuilder);
+    //     }
+
+    //     JsonArray articlesJsonArray = jsonArrayBuilder.build();
+
+    //     // Return the JSON array as a string
+    //     return articlesJsonArray.toString();
+    // }
+
+
+
+    // FOR REFERENCE: This returns one giant JsonObjects, with nested objects inside. Each nested object is an article (value), with the key being the id
+    // public String getAllSavedArticlesJsonString() {
+    //     List<News> allSavedArticlesPOJO = allSavedArticles();
+
+    //     // Build the JSON object
+    //     JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+
+    //     for (News article : allSavedArticlesPOJO) {
+    //         JsonObjectBuilder articleBuilder = Json.createObjectBuilder();
+    //         articleBuilder
+    //             .add("id", article.getId())
+    //             .add("publishedOn", article.getPublishedOn())
+    //             .add("publishedOnFormatted", article.getPublishedOnFormatted().toString())
+    //             .add("title", article.getTitle())
+    //             .add("url", article.getUrl())
+    //             .add("imageUrl", article.getImageUrl())
+    //             .add("body", article.getBody())
+    //             .add("tags", article.getTags())
+    //             .add("categories", article.getCategories());
+            
+    //         // Use the article ID as the key
+    //         jsonObjectBuilder.add(article.getId(), articleBuilder);
+    //     }
+
+    //     // Create the final JSON object
+    //     JsonObject finalJsonObject = jsonObjectBuilder.build();
+
+    //     // Convert the JSON object to a string
+    //     return finalJsonObject.toString();
+    // }
+
 }
