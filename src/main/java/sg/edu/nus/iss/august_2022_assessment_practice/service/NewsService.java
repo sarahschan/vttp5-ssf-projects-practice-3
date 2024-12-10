@@ -70,12 +70,48 @@ public class NewsService {
     }
     
 
-    // Find an article by ID (from Redis Database)
-    public News findArticleById(String articleId){
+    // Find an article by ID (from Crypto API)
+    public News findArticleByIdFromAPI(String articleId){
 
-        // Note that you CANNOT use getArticles for this because it checks from the Crypto API
-        //  the instruction is to pull from the redis database of saved articles
-        //  the Crypto API refreshes super fast so an article that might still be in redis may no longer be on the API
+        List<News> allArticles = getArticles();
+
+        for (News article : allArticles) {
+            if (article.getId().equals(articleId)){
+                return article;
+            }
+        }
+
+        return null;
+    }
+
+
+    // Save an article to Redis
+    public void saveArticle(String articleId){
+        
+        // get the article
+        News articleToSave = findArticleByIdFromAPI(articleId);
+
+        // build the newsJsonObject
+        JsonObject newsJsonObject = Json.createObjectBuilder()
+                                    .add("id", articleToSave.getId())
+                                    .add("publishedOn", articleToSave.getPublishedOn())
+                                    .add("publishedOnFormatted", articleToSave.getPublishedOnFormatted().toString())
+                                    .add("title", articleToSave.getTitle())
+                                    .add("url", articleToSave.getUrl())
+                                    .add("imageUrl", articleToSave.getImageUrl())
+                                    .add("body", articleToSave.getBody())
+                                    .add("tags", articleToSave.getTags())
+                                    .add("categories", articleToSave.getCategories())
+                                    .build();
+
+        // save to redis
+        newsRepo.create(Constant.REDIS_KEY, articleId, newsJsonObject.toString());
+
+    }
+
+
+    // Find an article by ID (from Redis Database)
+    public News findSavedArticleById(String articleId){
 
         // check if key exists
         if (newsRepo.hasHashKey(Constant.REDIS_KEY, articleId)){
@@ -104,31 +140,6 @@ public class NewsService {
         }
 
         return null;
-    }
-
-
-    // Save an article to Redis
-    public void saveArticle(String articleId){
-        
-        // get the article
-        News articleToSave = findArticleById(articleId);
-
-        // build the newsJsonObject
-        JsonObject newsJsonObject = Json.createObjectBuilder()
-                                    .add("id", articleToSave.getId())
-                                    .add("publishedOn", articleToSave.getPublishedOn())
-                                    .add("publishedOnFormatted", articleToSave.getPublishedOnFormatted().toString())
-                                    .add("title", articleToSave.getTitle())
-                                    .add("url", articleToSave.getUrl())
-                                    .add("imageUrl", articleToSave.getImageUrl())
-                                    .add("body", articleToSave.getBody())
-                                    .add("tags", articleToSave.getTags())
-                                    .add("categories", articleToSave.getCategories())
-                                    .build();
-
-        // save to redis
-        newsRepo.create(Constant.REDIS_KEY, articleId, newsJsonObject.toString());
-
     }
 
 

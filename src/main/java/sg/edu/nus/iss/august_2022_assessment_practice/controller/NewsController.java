@@ -19,7 +19,7 @@ public class NewsController {
     NewsService newsService;
 
     // show all news articles
-    @GetMapping()
+    @GetMapping(path={"", "/"})
     public String showAllNews(Model model){
 
         List<News> newsList = newsService.getArticles();
@@ -40,6 +40,8 @@ public class NewsController {
             for (String articleId : selectedArticleIds) {
                 newsService.saveArticle(articleId);
             }
+
+            return "redirect:/";
         }
 
         return "redirect:/";

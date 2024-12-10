@@ -24,7 +24,7 @@ public class NewsRestController {
     @GetMapping("/news/{id}")
     public ResponseEntity<String> getSavedArticle(@PathVariable("id") String id){
 
-        News foundArticle = newsService.findArticleById(id);
+        News foundArticle = newsService.findSavedArticleById(id);
 
         // if null was returned, means article doesn't exist
         if (foundArticle == null) {
@@ -55,8 +55,6 @@ public class NewsRestController {
             headers.add("Content-Type", "application/json");
 
             // build the body - found article
-            //  quite sure we don't have to do this, but it's fine
-            //  FYI - if you change it to ResponseEntity<Object>, you can just return the foundArticle object
             JsonObject newsJsonObject = Json.createObjectBuilder()
                                             .add("id", foundArticle.getId())
                                             .add("publishedOn", foundArticle.getPublishedOn())
