@@ -31,4 +31,15 @@ public class NewsRepo {
         return redisTemplate.opsForHash().values(redisKey);
     }
     
+
+    public Boolean hasHashKey(String redisKey, String hashKey){
+        return redisTemplate.opsForHash().hasKey(redisKey, hashKey);
+    }
+
+    
+    public Object get(String redisKey, String hashKey) {
+        // Object can be anything, a string, a number, a class, a collection
+        return redisTemplate.opsForHash().get(redisKey, hashKey);
+    }
+    
 }

@@ -68,19 +68,47 @@ public class NewsService {
     }
     
 
-    // Find an article by ID (from Crypto API)
+    // Find an article by ID (from Redis Database)
     public News findArticleById(String articleId){
 
-        List<News> allArticles = getArticles();
+        // Note that you CANNOT use getArticles for this because it checks from the Crypto API
+        //  the instruction is to pull from the redis database of saved articles
+        //  the Crypto API refreshes super fast so an article that might still be in redis may no longer be on the API
 
-        for (News article : allArticles){
-            if (article.getId().equals(articleId)){
-                return article;
-            }
+        System.out.println("Looking for article: " + articleId);
+
+        // check if key exists
+        if (newsRepo.hasHashKey(Constant.REDIS_KEY, articleId)){
+
+            System.out.println("Found article in redis");
+            
+            // If the key exists, retrieve it
+            String articleString = String.valueOf(newsRepo.get(Constant.REDIS_KEY, articleId));
+
+            // Make conversion from JsonObject String -> JsonObject -> POJO
+            JsonReader jReader = Json.createReader(new StringReader(articleString));
+            JsonObject articleJsonObject = jReader.readObject();
+                // Extract
+                String id = articleJsonObject.getString("id");
+                Long publishedOn = articleJsonObject.getJsonNumber("publishedOn").longValue();
+                String title = articleJsonObject.getString("title");
+                String url = articleJsonObject.getString("url");
+                String imageUrl = articleJsonObject.getString("imageUrl");
+                String body = articleJsonObject.getString("body");
+                String tags = articleJsonObject.getString("tags");
+                String categories = articleJsonObject.getString("categories");
+            
+            // Create POJO
+            News article = new News(id, publishedOn, title, url, imageUrl, body, tags, categories);
+
+            return article;
+
         }
 
-        return null;
+        System.out.println("didn't find article in redis");
 
+
+        return null;
     }
 
 
@@ -121,17 +149,17 @@ public class NewsService {
         // Deserialize JsonObject String -> JsonObject -> News
         for (Map.Entry<Object, Object> entry : articlesMap.entrySet()){
             JsonReader jReader = Json.createReader(new StringReader(entry.getValue().toString()));
-            JsonObject jsonNews = jReader.readObject();
+            JsonObject articleJsonObject = jReader.readObject();
 
             // Extract data and create News POJO
-                String id = jsonNews.getString("id");
-                Long publishedOn = jsonNews.getJsonNumber("publishedOn").longValue();
-                String title = jsonNews.getString("title");
-                String url = jsonNews.getString("url");
-                String imageUrl = jsonNews.getString("imageUrl");
-                String body = jsonNews.getString("body");
-                String tags = jsonNews.getString("tags");
-                String categories = jsonNews.getString("categories");
+                String id = articleJsonObject.getString("id");
+                Long publishedOn = articleJsonObject.getJsonNumber("publishedOn").longValue();
+                String title = articleJsonObject.getString("title");
+                String url = articleJsonObject.getString("url");
+                String imageUrl = articleJsonObject.getString("imageUrl");
+                String body = articleJsonObject.getString("body");
+                String tags = articleJsonObject.getString("tags");
+                String categories = articleJsonObject.getString("categories");
             
             News article = new News(id, publishedOn, title, url, imageUrl, body, tags, categories);
             savedArticles.add(article);
