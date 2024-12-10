@@ -3,6 +3,7 @@ package sg.edu.nus.iss.august_2022_assessment_practice.service;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -107,4 +108,36 @@ public class NewsService {
 
     }
 
+
+    // Get all saved articles from Redis
+    public List<News> allSavedArticles(){
+
+        // Retrieve all saved articles from Redis
+        Map<Object, Object> articlesMap = newsRepo.getEntries(Constant.REDIS_KEY);
+
+        // Prepare the list to hold the POJOs
+        List<News> savedArticles = new ArrayList<>();
+
+        // Deserialize JsonObject String -> JsonObject -> News
+        for (Map.Entry<Object, Object> entry : articlesMap.entrySet()){
+            JsonReader jReader = Json.createReader(new StringReader(entry.getValue().toString()));
+            JsonObject jsonNews = jReader.readObject();
+
+            // Extract data and create News POJO
+                String id = jsonNews.getString("id");
+                Long publishedOn = jsonNews.getJsonNumber("publishedOn").longValue();
+                String title = jsonNews.getString("title");
+                String url = jsonNews.getString("url");
+                String imageUrl = jsonNews.getString("imageUrl");
+                String body = jsonNews.getString("body");
+                String tags = jsonNews.getString("tags");
+                String categories = jsonNews.getString("categories");
+            
+            News article = new News(id, publishedOn, title, url, imageUrl, body, tags, categories);
+            savedArticles.add(article);
+
+        }
+
+        return savedArticles;
+    }
 }

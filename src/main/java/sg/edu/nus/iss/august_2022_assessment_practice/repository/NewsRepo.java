@@ -1,5 +1,8 @@
 package sg.edu.nus.iss.august_2022_assessment_practice.repository;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,4 +21,14 @@ public class NewsRepo {
         redisTemplate.opsForHash().put(redisKey, hashKey, hashValue);
     }
 
+
+    public Map<Object, Object> getEntries(String redisKey){
+        return redisTemplate.opsForHash().entries(redisKey);
+    }
+
+
+    public List<Object> getValues(String redisKey) {
+        return redisTemplate.opsForHash().values(redisKey);
+    }
+    
 }

@@ -1,5 +1,8 @@
 package sg.edu.nus.iss.august_2022_assessment_practice.restController;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -75,4 +78,24 @@ public class NewsRestController {
     }
 
 
+    // FAFO - Additional endpoint to get all articles saved in redis
+    @GetMapping("/news/all")
+    public ResponseEntity<List<News>> getAllSavedArticles(){
+        
+        List<News> savedArticles = newsService.allSavedArticles();
+
+        // return 200 OK and article
+        // Set the header
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        // Build the response entity
+        ResponseEntity<List<News>> response = ResponseEntity.status(200)
+                                                              .headers(headers)
+                                                              .body(savedArticles);
+
+        return response;
+
+
+    }
 }
