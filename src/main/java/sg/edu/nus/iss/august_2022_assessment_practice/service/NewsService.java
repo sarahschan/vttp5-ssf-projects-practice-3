@@ -75,12 +75,8 @@ public class NewsService {
         //  the instruction is to pull from the redis database of saved articles
         //  the Crypto API refreshes super fast so an article that might still be in redis may no longer be on the API
 
-        System.out.println("Looking for article: " + articleId);
-
         // check if key exists
         if (newsRepo.hasHashKey(Constant.REDIS_KEY, articleId)){
-
-            System.out.println("Found article in redis");
             
             // If the key exists, retrieve it
             String articleString = String.valueOf(newsRepo.get(Constant.REDIS_KEY, articleId));
@@ -104,9 +100,6 @@ public class NewsService {
             return article;
 
         }
-
-        System.out.println("didn't find article in redis");
-
 
         return null;
     }

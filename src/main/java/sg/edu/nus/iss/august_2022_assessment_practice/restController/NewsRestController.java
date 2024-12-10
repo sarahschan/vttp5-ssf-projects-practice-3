@@ -1,5 +1,6 @@
 package sg.edu.nus.iss.august_2022_assessment_practice.restController;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import sg.edu.nus.iss.august_2022_assessment_practice.model.News;
 import sg.edu.nus.iss.august_2022_assessment_practice.service.NewsService;
 
@@ -98,4 +100,40 @@ public class NewsRestController {
 
 
     }
+
+    @GetMapping("news/all/json")
+    public ResponseEntity<List<String>> getAllSavedArticlesJson(){
+        
+        List<News> savedArticles = newsService.allSavedArticles();
+
+        List<String> savedArticlesJson = new ArrayList<>();
+
+        for (News article : savedArticles) {
+            JsonObject articleJson = Json.createObjectBuilder()
+                                        .add("id", article.getId())
+                                        .add("publishedOn", article.getPublishedOn())
+                                        .add("publishedOnFormatted", article.getPublishedOnFormatted().toString())
+                                        .add("title", article.getTitle())
+                                        .add("url", article.getUrl())
+                                        .add("imageUrl", article.getImageUrl())
+                                        .add("body", article.getBody())
+                                        .add("tags", article.getTags())
+                                        .add("categories", article.getCategories())
+                                        .build();
+            savedArticlesJson.add(articleJson.toString());
+        }
+
+         // return 200 OK and article
+        // Set the header
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        // Build the response entity
+        ResponseEntity<List<String>> response = ResponseEntity.status(200)
+                                                              .headers(headers)
+                                                              .body(savedArticlesJson);
+
+        return response;
+    }
+
 }
